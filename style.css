@@ -72,7 +72,8 @@ h1 span { color: var(--accent); font-weight: 400; }
   margin-top: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 22px;
   background: linear-gradient(145deg, rgba(29, 44, 66, .98), rgba(22, 34, 52, .98));
 }
-.completed-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.completed-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.completed-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .completed-header .eyebrow { margin-bottom: 5px; }
 .completed-header h2 { margin: 0; font-size: 1.15rem; }
 .completed-count { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }

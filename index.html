@@ -1,59 +1,62 @@
 <!doctype html>
-<html lang="hu">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101827">
-  <title>8-puzzle – Képkirakó</title>
+  <title>8-Puzzle | Picture Puzzle</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
   <main class="app-shell">
     <header class="page-header">
-      <div class="eyebrow">LOGIKAI JÁTÉK</div>
-      <h1>8-puzzle <span>·</span> Képkirakó</h1>
-      <p class="intro">Rakd sorba a képkockákat úgy, hogy csak az üres mezővel szomszédos elemeket mozgathatod.</p>
+      <div class="eyebrow">LOGIC PUZZLE</div>
+      <h1>8-Puzzle <span>·</span> Picture Puzzle</h1>
+      <p class="intro">Arrange the picture tiles by moving only the pieces next to the empty space.</p>
     </header>
 
-    <section class="game-card" aria-label="8-puzzle játék">
+    <section class="game-card" aria-label="8-puzzle game">
       <div class="game-topbar">
-        <div class="stat"><span class="stat-label">Lépések</span><strong id="move-count">0</strong></div>
-        <div class="stat timer-stat"><span class="stat-label">Idő</span><strong id="timer">00:00</strong></div>
-        <div class="stat status-stat"><span class="stat-label">Állapot</span><strong id="status" aria-live="polite">Kezdésre kész</strong></div>
+        <div class="stat"><span class="stat-label">Moves</span><strong id="move-count">0</strong></div>
+        <div class="stat timer-stat"><span class="stat-label">Time</span><strong id="timer">00:00</strong></div>
+        <div class="stat status-stat"><span class="stat-label">Status</span><strong id="status" aria-live="polite">Ready</strong></div>
       </div>
-      <div class="level-indicator"><span>Szint</span><strong id="level-number">1 / 0</strong></div>
-<div class="board-frame">
-        <div id="board" class="board" role="group" aria-label="A kirakó táblája"></div>
+      <div class="level-indicator"><span>Level</span><strong id="level-number">1 / 0</strong></div>
+      <div class="board-frame">
+        <div id="board" class="board" role="group" aria-label="Puzzle board"></div>
       </div>
 
       <div class="controls">
-        <button id="next-level-button" class="button button-primary" type="button" hidden>Következő szint</button>
+        <button id="next-level-button" class="button button-primary" type="button" hidden>Next level</button>
       </div>
-      <p id="message" class="message" aria-live="polite">A képek betöltése…</p>
+      <p id="message" class="message" aria-live="polite">Loading images...</p>
     </section>
 
     <section class="completed-card" aria-labelledby="completed-title">
       <div class="completed-header">
         <div>
-          <div class="eyebrow">GYŰJTEMÉNY</div>
-          <h2 id="completed-title">Megoldott képek</h2>
+          <div class="eyebrow">COLLECTION</div>
+          <h2 id="completed-title">Completed Pictures</h2>
         </div>
-        <span id="completed-count" class="completed-count">0 / 0</span>
+        <div class="completed-actions">
+          <span id="completed-count" class="completed-count">0 / 0</span>
+          <button id="reset-progress-button" class="button button-quiet" type="button">Reset progress</button>
+        </div>
       </div>
-      <p id="completed-empty" class="completed-empty">A megoldott kirakók képei itt jelennek meg. Ha egyszer kiraktál egy képet, itt később is megnyithatod.</p>
+      <p id="completed-empty" class="completed-empty">Completed puzzle pictures will appear here.</p>
       <div id="completed-gallery" class="completed-gallery" aria-live="polite"></div>
     </section>
 
-    <dialog id="image-dialog" class="image-dialog" aria-label="Megoldott kép">
+    <dialog id="image-dialog" class="image-dialog" aria-label="Completed picture">
       <div class="dialog-topbar">
-        <strong id="dialog-image-title">Megoldott kép</strong>
-        <button id="dialog-close" class="button button-quiet" type="button">Bezárás ✕</button>
+        <strong id="dialog-image-title">Completed picture</strong>
+        <button id="dialog-close" class="button button-quiet" type="button">Close ✕</button>
       </div>
-      <img id="dialog-image" alt="A megoldott kirakó teljes képe">
+      <img id="dialog-image" alt="Completed puzzle picture">
     </dialog>
 
-    <footer class="footer">Irányítás: kattints egy szomszédos mezőre, vagy használd a nyílbillentyűket.</footer>
+    <footer class="footer">Click a neighboring tile or use the arrow keys to play.</footer>
   </main>
 </body>
 </html>

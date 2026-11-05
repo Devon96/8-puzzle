@@ -13,6 +13,7 @@ const statusElement = document.querySelector('#status');
 const messageElement = document.querySelector('#message');
 const levelNumberElement = document.querySelector('#level-number');
 const nextLevelButton = document.querySelector('#next-level-button');
+const resetProgressButton = document.querySelector('#reset-progress-button');
 const completedGalleryElement = document.querySelector('#completed-gallery');
 const completedEmptyElement = document.querySelector('#completed-empty');
 const completedCountElement = document.querySelector('#completed-count');
@@ -58,7 +59,7 @@ function renderBoard() {
     if (tileValue === 0) {
       const emptyTile = document.createElement('div');
       emptyTile.className = 'tile empty';
-      emptyTile.setAttribute('aria-label', 'Üres mező');
+      emptyTile.setAttribute('aria-label', 'Empty space');
       emptyTile.setAttribute('aria-hidden', 'true');
       boardElement.append(emptyTile);
       return;
@@ -68,7 +69,7 @@ function renderBoard() {
     tile.type = 'button';
     tile.className = 'tile';
     tile.disabled = isPreviewing || gameCompleted || !adjacent(index, emptyIndex);
-    tile.setAttribute('aria-label', `${tileValue}. képrészlet mozgatása`);
+    tile.setAttribute('aria-label', `Move tile ${tileValue}`);
     tile.addEventListener('click', () => moveTile(index));
 
     if (imageLoaded && currentImageFilename) {
@@ -92,8 +93,7 @@ function renderBoard() {
   });
 }
 
-// Közvetlenül a helyi képfájlt használjuk. Nincs Canvas-export (toDataURL),
-// így a játék file:// megnyitásakor sem jelentkezik tainted canvas hiba.
+// Use the local image directly so the game also works when opened with file://.
 function loadPuzzleImage(filename) {
   currentImageFilename = filename;
   const requestId = ++imageLoadRequestId;
@@ -113,15 +113,15 @@ function loadPuzzleImage(filename) {
   updateLevelDisplay();
   updateStats();
   renderBoard();
-  statusElement.textContent = 'Kép betöltése…';
-  setMessage(`${filename} betöltése…`);
+  statusElement.textContent = 'Loading image...';
+  setMessage(`Loading ${filename}...`);
 
   const image = new Image();
   image.onload = () => {
     if (requestId !== imageLoadRequestId) return;
     imageLoaded = true;
-    statusElement.textContent = 'Megoldás előnézete';
-    setMessage(`${currentLevelIndex + 1}. szint: ${filename}. A megoldott kép 5 másodpercig látható.`);
+    statusElement.textContent = 'Previewing solution';
+    setMessage(`Level ${currentLevelIndex + 1}: ${filename}. The completed picture is shown for 5 seconds.`);
     renderBoard();
     previewTimeout = window.setTimeout(() => {
       previewTimeout = null;
@@ -131,8 +131,8 @@ function loadPuzzleImage(filename) {
   };
   image.onerror = () => {
     if (requestId !== imageLoadRequestId) return;
-    statusElement.textContent = 'A kép nem található';
-    setMessage(`Nem sikerült betölteni: images/${filename}. Ellenőrizd, hogy a fájl a megfelelő mappában van-e.`);
+    statusElement.textContent = 'Image not found';
+    setMessage(`Could not load images/${filename}. Make sure the file is in the images folder.`);
     renderBoard();
   };
   image.src = `images/${encodeURIComponent(filename)}`;
@@ -150,6 +150,7 @@ function loadNextLevel() {
 
 function initializeGame() {
   nextLevelButton.addEventListener('click', loadNextLevel);
+  resetProgressButton.addEventListener('click', resetProgress);
   discoverPuzzleImages();
 }
 
@@ -167,8 +168,8 @@ function discoverPuzzleImages(index = 1) {
       loadPuzzleImage(PUZZLE_IMAGES[0]);
       return;
     }
-    statusElement.textContent = 'Nincs betölthető kép';
-    setMessage('Tegyél legalább egy számozott JPG-képet az images mappába, például 1.jpg néven.');
+    statusElement.textContent = 'No images found';
+    setMessage('Add at least one numbered JPG image to the images folder, for example 1.jpg.');
   };
   image.src = `images/${encodeURIComponent(filename)}`;
 }
@@ -204,12 +205,29 @@ function stopTimer() {
   }
 }
 
+function resetProgress() {
+  if (!window.confirm('Clear all saved progress and restart from the first puzzle?')) return;
+
+  try {
+    localStorage.removeItem(COMPLETED_STORAGE_KEY);
+  } catch (error) {
+    console.warn('Could not clear saved puzzle progress.', error);
+    setMessage('Could not clear saved progress. Check your browser storage settings.');
+    return;
+  }
+
+  renderCompletedGallery();
+  currentLevelIndex = 0;
+  gameCompleted = false;
+  if (PUZZLE_IMAGES.length) loadPuzzleImage(PUZZLE_IMAGES[0]);
+}
+
 function getCompletedImages() {
   try {
     const saved = JSON.parse(localStorage.getItem(COMPLETED_STORAGE_KEY) || '[]');
     return Array.isArray(saved) ? saved.filter((filename) => PUZZLE_IMAGES.includes(filename)) : [];
   } catch (error) {
-    console.warn('A megoldott képek listáját nem sikerült beolvasni.', error);
+    console.warn('Could not read the completed puzzle list.', error);
     return [];
   }
 }
@@ -221,15 +239,15 @@ function saveCompletedImage(filename) {
   try {
     localStorage.setItem(COMPLETED_STORAGE_KEY, JSON.stringify(completed));
   } catch (error) {
-    console.warn('A böngésző nem engedte elmenteni a megoldott képek listáját.', error);
-    setMessage('A kirakó sikerült, de a böngésző nem engedélyezte az eredmény mentését.', false);
+    console.warn('The browser did not allow saving the completed puzzle list.', error);
+    setMessage('Puzzle solved, but the browser did not allow saving your progress.');
   }
   renderCompletedGallery();
 }
 
 function openCompletedImage(filename) {
   dialogImage.src = `images/${encodeURIComponent(filename)}`;
-  dialogImage.alt = `${filename} – megoldott kirakó`;
+  dialogImage.alt = `${filename} - completed puzzle`;
   dialogImageTitle.textContent = filename;
   if (typeof imageDialog.showModal === 'function') imageDialog.showModal();
   else window.open(dialogImage.src, '_blank', 'noopener');
@@ -249,14 +267,14 @@ function renderCompletedGallery() {
 
     const image = document.createElement('img');
     image.src = `images/${encodeURIComponent(filename)}`;
-    image.alt = `${filename} – megoldott kép`;
+    image.alt = `${filename} - completed picture`;
     image.loading = 'lazy';
 
     const caption = document.createElement('span');
     caption.textContent = filename;
 
     const openLabel = document.createElement('small');
-    openLabel.textContent = 'Kép megnyitása ↗';
+    openLabel.textContent = 'Open picture ↗';
 
     item.append(image, caption, openLabel);
     completedGalleryElement.append(item);
@@ -265,15 +283,15 @@ function renderCompletedGallery() {
 
 function finishGame() {
   stopTimer();
-  statusElement.textContent = 'Megoldva!';
-  setMessage(`Gratulálok! ${moveCount} lépésből, ${formatTime(elapsedSeconds)} idő alatt raktad ki a képet.`, true);
+  statusElement.textContent = 'Solved!';
+  setMessage(`Solved in ${moveCount} moves and ${formatTime(elapsedSeconds)}.`, true);
   saveCompletedImage(currentImageFilename);
   gameCompleted = true;
   if (currentLevelIndex < PUZZLE_IMAGES.length - 1) {
     nextLevelButton.hidden = false;
-    nextLevelButton.textContent = `Következő szint (${currentLevelIndex + 2}. kép)`;
+    nextLevelButton.textContent = `Next level (picture ${currentLevelIndex + 2})`;
   } else {
-    setMessage(`Gratulálok! Mind a ${PUZZLE_IMAGES.length} szintet teljesítetted.`, true);
+    setMessage(`Congratulations! You completed all ${PUZZLE_IMAGES.length} levels.`, true);
   }
   renderBoard();
   updateStats();
@@ -295,8 +313,8 @@ function moveTile(tileIndex) {
   if (isSolved()) {
     finishGame();
   } else {
-    statusElement.textContent = 'Játék folyamatban';
-    setMessage('Jó úton jársz!');
+    statusElement.textContent = 'In progress';
+    setMessage('Looking good!');
   }
   return true;
 }
@@ -320,7 +338,7 @@ function shuffleBoard() {
   board = [...GOAL_STATE];
   let previousEmptyIndex = -1;
 
-  // Csak szabályos lépéseket végzünk, így a keverés mindig megoldható.
+  // Use legal moves so every shuffled board remains solvable.
   for (let step = 0; step < SHUFFLE_MOVES; step += 1) {
     const emptyIndex = board.indexOf(0);
     const possibleMoves = [];
@@ -344,8 +362,8 @@ function shuffleBoard() {
   elapsedSeconds = 0;
   gameStarted = true;
   updateStats();
-  statusElement.textContent = 'Játék folyamatban';
-  setMessage('A kirakó összekeverve. Kezdődhet a játék!');
+  statusElement.textContent = 'In progress';
+  setMessage('The puzzle is shuffled. Good luck!');
   renderBoard();
 }
 
