@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>8-puzzle – Képkirakó</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="page-header">
+      <div class="eyebrow">LOGIKAI JÁTÉK</div>
+      <h1>8-puzzle <span>·</span> Képkirakó</h1>
+      <p class="intro">Rakd sorba a képkockákat úgy, hogy csak az üres mezővel szomszédos elemeket mozgathatod.</p>
+    </header>
+
+    <section class="game-card" aria-label="8-puzzle játék">
+      <div class="game-topbar">
+        <div class="stat"><span class="stat-label">Lépések</span><strong id="move-count">0</strong></div>
+        <div class="stat timer-stat"><span class="stat-label">Idő</span><strong id="timer">00:00</strong></div>
+        <div class="stat status-stat"><span class="stat-label">Állapot</span><strong id="status" aria-live="polite">Kezdésre kész</strong></div>
+      </div>
+      <div class="level-indicator"><span>Szint</span><strong id="level-number">1 / 0</strong></div>
+<div class="board-frame">
+        <div id="board" class="board" role="group" aria-label="A kirakó táblája"></div>
+      </div>
+
+      <div class="controls">
+        <button id="next-level-button" class="button button-primary" type="button" hidden>Következő szint</button>
+      </div>
+      <p id="message" class="message" aria-live="polite">A képek betöltése…</p>
+    </section>
+
+    <section class="completed-card" aria-labelledby="completed-title">
+      <div class="completed-header">
+        <div>
+          <div class="eyebrow">GYŰJTEMÉNY</div>
+          <h2 id="completed-title">Megoldott képek</h2>
+        </div>
+        <span id="completed-count" class="completed-count">0 / 0</span>
+      </div>
+      <p id="completed-empty" class="completed-empty">A megoldott kirakók képei itt jelennek meg. Ha egyszer kiraktál egy képet, itt később is megnyithatod.</p>
+      <div id="completed-gallery" class="completed-gallery" aria-live="polite"></div>
+    </section>
+
+    <dialog id="image-dialog" class="image-dialog" aria-label="Megoldott kép">
+      <div class="dialog-topbar">
+        <strong id="dialog-image-title">Megoldott kép</strong>
+        <button id="dialog-close" class="button button-quiet" type="button">Bezárás ✕</button>
+      </div>
+      <img id="dialog-image" alt="A megoldott kirakó teljes képe">
+    </dialog>
+
+    <footer class="footer">Irányítás: kattints egy szomszédos mezőre, vagy használd a nyílbillentyűket.</footer>
+  </main>
+</body>
+</html>
