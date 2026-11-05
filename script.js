@@ -5,6 +5,7 @@ const SHUFFLE_MOVES = 80;
 const PREVIEW_DURATION = 5000;
 const PUZZLE_IMAGES = [];
 const COMPLETED_STORAGE_KEY = 'eightPuzzleCompletedImages';
+const CURRENT_LEVEL_STORAGE_KEY = 'eightPuzzleCurrentLevel';
 
 const boardElement = document.querySelector('#board');
 const moveCountElement = document.querySelector('#move-count');
@@ -145,6 +146,7 @@ function updateLevelDisplay() {
 function loadNextLevel() {
   if (!gameCompleted || currentLevelIndex >= PUZZLE_IMAGES.length - 1) return;
   currentLevelIndex += 1;
+  saveCurrentLevel();
   loadPuzzleImage(PUZZLE_IMAGES[currentLevelIndex]);
 }
 
@@ -165,7 +167,8 @@ function discoverPuzzleImages(index = 1) {
     updateLevelDisplay();
     renderCompletedGallery();
     if (PUZZLE_IMAGES.length) {
-      loadPuzzleImage(PUZZLE_IMAGES[0]);
+      currentLevelIndex = getInitialLevelIndex();
+      loadPuzzleImage(PUZZLE_IMAGES[currentLevelIndex]);
       return;
     }
     statusElement.textContent = 'No images found';
@@ -210,6 +213,7 @@ function resetProgress() {
 
   try {
     localStorage.removeItem(COMPLETED_STORAGE_KEY);
+    localStorage.removeItem(CURRENT_LEVEL_STORAGE_KEY);
   } catch (error) {
     console.warn('Could not clear saved puzzle progress.', error);
     setMessage('Could not clear saved progress. Check your browser storage settings.');
@@ -220,6 +224,34 @@ function resetProgress() {
   currentLevelIndex = 0;
   gameCompleted = false;
   if (PUZZLE_IMAGES.length) loadPuzzleImage(PUZZLE_IMAGES[0]);
+}
+
+function saveCurrentLevel() {
+  try {
+    localStorage.setItem(CURRENT_LEVEL_STORAGE_KEY, String(currentLevelIndex));
+  } catch (error) {
+    console.warn('Could not save the current puzzle level.', error);
+  }
+}
+
+function getInitialLevelIndex() {
+  const completed = new Set(getCompletedImages());
+  const firstUncompletedIndex = PUZZLE_IMAGES.findIndex((filename) => !completed.has(filename));
+  let levelIndex = firstUncompletedIndex === -1 ? PUZZLE_IMAGES.length - 1 : firstUncompletedIndex;
+
+  try {
+    const savedIndex = Number(localStorage.getItem(CURRENT_LEVEL_STORAGE_KEY));
+    if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < PUZZLE_IMAGES.length) {
+      levelIndex = savedIndex;
+    }
+  } catch (error) {
+    console.warn('Could not read the saved puzzle level.', error);
+  }
+
+  while (levelIndex < PUZZLE_IMAGES.length && completed.has(PUZZLE_IMAGES[levelIndex])) {
+    levelIndex += 1;
+  }
+  return Math.min(levelIndex, PUZZLE_IMAGES.length - 1);
 }
 
 function getCompletedImages() {
